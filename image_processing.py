@@ -19,7 +19,6 @@ cv2.namedWindow("Landing Pad Detection")
 cv2.createTrackbar("Min Area", "Landing Pad Detection", min_area, 10000, nothing)
 cv2.createTrackbar("Max Area", "Landing Pad Detection", max_area, 10000, nothing)
 
-
 def display_picture():
     original_image = cv2.imread("picture.png", cv2.IMREAD_GRAYSCALE)
     #print(original_image.shape)
@@ -46,6 +45,7 @@ def find_landing_pad(processed_image):
     contours, _ = cv2.findContours(processed_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     landing_pad_contour = None
+    landingpad_xy = (0, 0)
 
     for contour in contours:    
         area = cv2.contourArea(contour)
@@ -57,9 +57,12 @@ def find_landing_pad(processed_image):
         x, y, w, h = cv2.boundingRect(landing_pad_contour)
         rect_color = (0, 0, 255)
         cv2.rectangle(processed_image_2, (x, y), (x + w, y + h), rect_color, 2)
+
+        landingpad_xy = ((x + (w / 2), y + (h / 2)))
     
     # Show the result
     cv2.imshow("Landing Pad Detection", processed_image_2)
+    return landingpad_xy
 
 if __name__ == "__main__":
     while True:

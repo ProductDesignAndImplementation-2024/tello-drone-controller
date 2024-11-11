@@ -3,6 +3,7 @@ import cv2
 import time
 import numpy as np
 import image_processing as imgp
+import drone_autopilot as autopilot
 
 tello = Tello()
 tello.connect()
@@ -108,11 +109,11 @@ def movement_controls(key):
 
 
 while True:
-    tello_info = fetch_tello_info_window_data()
-    display_tello_info_window(tello_info)
+    #tello_info = fetch_tello_info_window_data()
+    #display_tello_info_window(tello_info)
 
     processed = imgp.display_picture()
-    imgp.find_landing_pad(processed)
+    landingpad_xy = imgp.find_landing_pad(processed)
 
     key = cv2.waitKey(1)
     if key & 0xFF == ord('x'):
@@ -127,6 +128,23 @@ while True:
         take_picture()
         #processed = imgp.display_picture()
         #imgp.find_landing_pad(processed)
+    elif key & 0xFF == ord('b'):
+        rotation = autopilot.rotate_if_needed(landingpad_xy)
+        move = autopilot.move_if_needed(landingpad_xy)
+        print(rotation)
+        if rotation == 1:
+            tello.rotate_clockwise(20 * rotation)
+        elif rotation == -1:
+            tello.rotate_counter_clockwise(20 * -rotation)
+        else:
+            if move == 1:
+                tello.move_left(20 * move)
+            elif move == -1:
+                tello.move_right(20 * -move)
+            else:
+                tello.land()
+
+        print(move)
     elif movement_controls(key):
         continue
         
