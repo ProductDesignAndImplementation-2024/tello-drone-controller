@@ -107,46 +107,85 @@ def movement_controls(key):
     
     return True
 
+autopilot_is_enabled = False
+landingpad_old_loc = (-1, -1)
+
+def run_autopilot(landingpad_xy):
+    x, y = landingpad_xy
+    if x == -1:
+        print("Autopilot enabled, landingpad not found!")
+        return False
+
+    rotation = autopilot.rotate_if_needed(landingpad_xy)
+    move = autopilot.move_if_needed(landingpad_xy)
+    print(rotation)
+    if rotation == 1:
+        tello.rotate_clockwise(20 * rotation)
+    elif rotation == -1:
+        tello.rotate_counter_clockwise(20 * -rotation)
+    else:
+        if move == 1:
+            tello.move_back(20 * move)
+        elif move == -1:
+            tello.move_forward(20 * -move)
+        else:
+            tello.land()
+            return False
+
+    return True
 
 while True:
-    #tello_info = fetch_tello_info_window_data()
-    #display_tello_info_window(tello_info)
+    tello_info = fetch_tello_info_window_data()
+    display_tello_info_window(tello_info)
 
     processed = imgp.display_picture()
-    landingpad_xy = imgp.find_landing_pad(processed)
+    landingpad_xy = imgp.find_landing_pad(processed, landingpad_old_loc)
+    landingpad_old_loc = landingpad_xy
 
-    key = cv2.waitKey(1)
+    key = cv2.waitKey(10)
     if key & 0xFF == ord('x'):
         break
     elif key & 0xFF == ord('t'):
         tello.streamon()
         tello.takeoff()
     elif key & 0xFF == ord('l'):
+        landingpad_old_loc = (-1, -1)
         tello.land()
         tello.streamoff()
     elif key & 0xFF == ord('p'):
         take_picture()
-        #processed = imgp.display_picture()
-        #imgp.find_landing_pad(processed)
-    elif key & 0xFF == ord('b'):
-        rotation = autopilot.rotate_if_needed(landingpad_xy)
-        move = autopilot.move_if_needed(landingpad_xy)
-        print(rotation)
-        if rotation == 1:
-            tello.rotate_clockwise(20 * rotation)
-        elif rotation == -1:
-            tello.rotate_counter_clockwise(20 * -rotation)
-        else:
-            if move == 1:
-                tello.move_left(20 * move)
-            elif move == -1:
-                tello.move_right(20 * -move)
-            else:
-                tello.land()
+    elif key & 0xFF == ord('o'):
+        take_picture()
+        time.sleep(0.1)
 
-        print(move)
+        processed = imgp.display_picture()
+        landingpad_xy = imgp.find_landing_pad(processed, landingpad_old_loc)
+        landingpad_old_loc = landingpad_xy
+
+        autopilot_is_enabled = run_autopilot(landingpad_xy)
+        if autopilot_is_enabled == False:
+            landingpad_old_loc = (-1, -1)
+    elif key & 0xFF == ord('b'):
+        if autopilot_is_enabled:
+            autopilot_is_enabled = False
+        else:
+            autopilot_is_enabled = True
+            if autopilot_is_enabled == False:
+                landingpad_old_loc = (-1, -1)
     elif movement_controls(key):
         continue
+    else:
+        if autopilot_is_enabled:
+            take_picture()
+            time.sleep(0.1)
+
+            processed = imgp.display_picture()
+            landingpad_xy = imgp.find_landing_pad(processed, landingpad_old_loc)
+            landingpad_old_loc = landingpad_xy
+
+            autopilot_is_enabled = run_autopilot(landingpad_xy)
+            if autopilot_is_enabled == False:
+                landingpad_old_loc = (-1, -1)
         
 cv2.destroyAllWindows()
 tello.end()
