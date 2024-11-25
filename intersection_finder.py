@@ -1,7 +1,32 @@
 import cv2
 import numpy as np
 import heapq
+import pathfinder as pf
 
+
+# Define a function to normalize coordinates to fit a 5x5 grid
+def normalize_coordinates(coordinates, grid_size=5, error_corection = 5):
+    max_x = 0
+    max_y = 0
+    min_y = 270
+    min_x = 270
+    for i in coordinates:
+        if max_y < i[1]:
+            max_y = i[1]
+        if max_x < i[0]:
+            max_x = i[0]
+        if min_x > i[0]:
+            min_x = i[0]
+        if min_y > i[1]:
+            min_y = i[1]
+    normalized_coords = []
+    print (min_x)
+    for (x, y) in coordinates:
+        norm_x = int(((x - min_x + error_corection) / (max_x - min_x)) * (grid_size - 1))
+        norm_y = int(((y - min_y + error_corection) / (max_y - min_y)) * (grid_size - 1))
+        normalized_coords.append([(norm_x, norm_y), (x, y)])
+    
+    return normalized_coords
 
 def find_grid_intersections(image_path, min_pixels=5, border_margin=10, max_density=0.3, vicinity_size=10, min_distance=10):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -45,7 +70,6 @@ def find_grid_intersections(image_path, min_pixels=5, border_margin=10, max_dens
             cv2.circle(output_image, (x, y), 3, (0, 0, 255), -1)
 
     return suppressed_intersections, output_image, binary
-
 
 def a_star_path(binary_image, start, end, intersections, directional_weight=(1, 1)):
     def heuristic(a, b):
@@ -102,12 +126,13 @@ if __name__ == "__main__":
     intersections, result_image, binary = find_grid_intersections(
         image_path, min_pixels=5, border_margin=0, max_density=0.3, vicinity_size=10, min_distance=10
     )
-
-    print("Detected intersections:", intersections)
-
+    normcoord = normalize_coordinates (intersections)
+    print("Detected intersections:", normcoord)
+    coordinate_dict = {(intersection): norm for (norm, intersection) in normcoord} 
     max_neighbor_distance = 60
     visited_intersections = set()
-
+    paths_cord = []
+    matrix = [['x' if (i + j) % 2 == 0 else '' for j in range(9)] for i in range(9)]
     for i, start in enumerate(intersections):
         for j, end in enumerate(intersections):
             if i != j:
@@ -115,13 +140,26 @@ if __name__ == "__main__":
                 if distance <= max_neighbor_distance:
                     path = a_star_path(binary, start, end, list(visited_intersections), directional_weight=(1, 1))
                     if path:
-                        print(f"Path found between {start} and {end}")
-
+                        # print(f"Path found between {start} and {end}")
+                        path_distance = len(path)
+                        if path_distance <= 60:
+                            paths_cord.append([coordinate_dict.get(start), coordinate_dict.get(end)])
                         visited_intersections.add(start)
                         visited_intersections.add(end)
 
                         for point in path:
                             cv2.circle(result_image, point, 1, (0, 255, 0), -1)
+    
+    for i in paths_cord:
+        if (i[0] != i[1]):
+            matrix[i[0][1] + i[1][1]][i[0][0] + i[1][0]] = '-'
+            print(f"Path found between {i[0]} and {i[1]} path ({i[0][0] + i[1][0]}, {i[0][1] + i[1][1]})")
+    
+    for i in matrix:
+        print (i)
+    
+    print(pf.find_path(matrix,[8,8],[8,0]))
+    
     cv2.imshow("Intersections and Paths", result_image)
     cv2.imwrite("intersections_and_paths.png", result_image)
     cv2.waitKey(0)
