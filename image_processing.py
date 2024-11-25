@@ -80,7 +80,8 @@ if __name__ == "__main__":
             break
         elif key &0xFF == ord('p'):
             processed_image = display_picture()
-            find_landing_pad(processed_image)
+            find_landing_pad(processed_image, (-1, -1))
+            cv2.imwrite("processed.png", processed_image)
             
     cv2.waitKey(0)
     cv2.destroyAllWindows()

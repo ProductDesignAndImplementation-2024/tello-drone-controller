@@ -142,7 +142,7 @@ while True:
     landingpad_xy = imgp.find_landing_pad(processed, landingpad_old_loc)
     landingpad_old_loc = landingpad_xy
 
-    key = cv2.waitKey(10)
+    key = cv2.waitKey(1)
     if key & 0xFF == ord('x'):
         break
     elif key & 0xFF == ord('t'):
