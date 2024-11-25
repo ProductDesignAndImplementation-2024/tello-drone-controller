@@ -47,9 +47,14 @@ def find_grid_intersections(image_path, min_pixels=5, border_margin=10, max_dens
     return suppressed_intersections, output_image, binary
 
 
-def a_star_path(binary_image, start, end, directional_weight=(1, 1)):
+def a_star_path(binary_image, start, end, intersections, directional_weight=(1, 1)):
     def heuristic(a, b):
         return abs(a[0] - b[0]) * directional_weight[0] + abs(a[1] - b[1]) * directional_weight[1]
+
+    # Create a set for fast lookup of other intersections
+    intersection_set = set(intersections)
+    intersection_set.discard(start)  # Remove the starting point, since it's allowed
+    intersection_set.discard(end)    # Remove the ending point, since it's allowed
 
     open_set = []
     heapq.heappush(open_set, (0, start))
@@ -77,6 +82,9 @@ def a_star_path(binary_image, start, end, directional_weight=(1, 1)):
             neighbor = (current[0] + dx, current[1] + dy)
             if 0 <= neighbor[1] < binary_image.shape[0] and 0 <= neighbor[0] < binary_image.shape[1]:
                 if binary_image[neighbor[1], neighbor[0]] == 255:
+                    if neighbor in intersection_set:
+                        continue
+
                     # Tentative g_score
                     tentative_g_score = g_score[current] + 1
 
@@ -97,19 +105,23 @@ if __name__ == "__main__":
 
     print("Detected intersections:", intersections)
 
-    max_neighbor_distance = 64
+    max_neighbor_distance = 60
+    visited_intersections = set()
+
     for i, start in enumerate(intersections):
         for j, end in enumerate(intersections):
             if i != j:
                 distance = np.sqrt((start[0] - end[0])**2 + (start[1] - end[1])**2)
                 if distance <= max_neighbor_distance:
-                    path = a_star_path(binary, start, end, directional_weight=(1, 1))
+                    path = a_star_path(binary, start, end, list(visited_intersections), directional_weight=(1, 1))
                     if path:
-                        print(f"Path found between {start} and {end}: {path}")
+                        print(f"Path found between {start} and {end}")
+
+                        visited_intersections.add(start)
+                        visited_intersections.add(end)
 
                         for point in path:
                             cv2.circle(result_image, point, 1, (0, 255, 0), -1)
-
     cv2.imshow("Intersections and Paths", result_image)
     cv2.imwrite("intersections_and_paths.png", result_image)
     cv2.waitKey(0)
