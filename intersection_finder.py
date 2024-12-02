@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import heapq
-import pathfinder as pf
+#import pathfinder as pf
 import pathfinder_v2 as pf2
 import time
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
                 if distance <= max_neighbor_distance:
                     path = a_star_path(binary, start, end, list(visited_intersections), directional_weight=(1, 1))
                     if path:
-                        # print(f"Path found between {start} and {end}")
+                        print(f"Path found between {start} and {end}")
                         path_distance = len(path)
                         if path_distance <= 60:
                             paths_cord.append([coordinate_dict.get(start), coordinate_dict.get(end)])
@@ -164,13 +164,13 @@ if __name__ == "__main__":
     for i in paths_cord:
         if (i[0] != i[1]):
             matrix[i[0][1] + i[1][1]][i[0][0] + i[1][0]] = '-'
-            #print(f"Path found between {i[0]} and {i[1]} path ({i[0][0] + i[1][0]}, {i[0][1] + i[1][1]})")
+            print(f"Path found between {i[0]} and {i[1]} path ({i[0][0] + i[1][0]}, {i[0][1] + i[1][1]})")
     
-    #for i in matrix:
-        #print (i)
+    for i in matrix:
+        print (i)
     
 
-    print(pf.find_path(matrix,[8,8],[8,0]))
+#    print(pf.find_path(matrix,[8,8],[8,0]))
     end_time = time.time()
 
     # Calculate execution time
@@ -190,13 +190,19 @@ if __name__ == "__main__":
             matrix2[x1][y1].append((x2, y2))
             matrix2[x2][y2].append((x1, y1))
 
-    '''
+
     # Print the populated matrix2 with connections
     for i in range(5):
         for j in range(5):
             print(f"Node ({i},{j}) is connected to: {matrix2[i][j]}")
-    '''
+
     path = pf2.find_path(matrix2, [4, 4], [0, 4])
+
+    if path:
+        pf2.print_path_directions(path)
+    else:
+        print("No valid path found.")
+
 
     end_time = time.time()
 
