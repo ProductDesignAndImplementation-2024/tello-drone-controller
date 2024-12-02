@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import heapq
 import pathfinder as pf
+import pathfinder_v2 as pf2
+import time
 
 
 # Define a function to normalize coordinates to fit a 5x5 grid
@@ -120,19 +122,25 @@ def a_star_path(binary_image, start, end, intersections, directional_weight=(1, 
 
     return []  # No path found
 
-
 if __name__ == "__main__":
     image_path = "processed.png"
     intersections, result_image, binary = find_grid_intersections(
         image_path, min_pixels=5, border_margin=0, max_density=0.3, vicinity_size=10, min_distance=10
     )
+
     normcoord = normalize_coordinates (intersections)
     print("Detected intersections:", normcoord)
     coordinate_dict = {(intersection): norm for (norm, intersection) in normcoord} 
+
     max_neighbor_distance = 60
     visited_intersections = set()
     paths_cord = []
+
+    matrix2 = [[[] for _ in range(5)] for _ in range(5)]
+    print(matrix2)
+
     matrix = [['x' if (i + j) % 2 == 0 else '' for j in range(9)] for i in range(9)]
+    print(matrix)
     for i, start in enumerate(intersections):
         for j, end in enumerate(intersections):
             if i != j:
@@ -150,15 +158,55 @@ if __name__ == "__main__":
                         for point in path:
                             cv2.circle(result_image, point, 1, (0, 255, 0), -1)
     
+    
+    start_time = time.time()
+
     for i in paths_cord:
         if (i[0] != i[1]):
             matrix[i[0][1] + i[1][1]][i[0][0] + i[1][0]] = '-'
-            print(f"Path found between {i[0]} and {i[1]} path ({i[0][0] + i[1][0]}, {i[0][1] + i[1][1]})")
+            #print(f"Path found between {i[0]} and {i[1]} path ({i[0][0] + i[1][0]}, {i[0][1] + i[1][1]})")
     
-    for i in matrix:
-        print (i)
+    #for i in matrix:
+        #print (i)
     
+
     print(pf.find_path(matrix,[8,8],[8,0]))
+    end_time = time.time()
+
+    # Calculate execution time
+    execution_time_ms = end_time - start_time
+
+# Print the execution time in ms
+    print(f"Execution Time: {execution_time_ms:.10f} s")
+
+
+    start_time = time.time()
+    for i in paths_cord:
+        start_norm, end_norm = i
+        if start_norm != end_norm:
+            x1, y1 = start_norm
+            x2, y2 = end_norm
+            # Add bidirectional connections in matrix2
+            matrix2[x1][y1].append((x2, y2))
+            matrix2[x2][y2].append((x1, y1))
+
+    '''
+    # Print the populated matrix2 with connections
+    for i in range(5):
+        for j in range(5):
+            print(f"Node ({i},{j}) is connected to: {matrix2[i][j]}")
+    '''
+    path = pf2.find_path(matrix2, [4, 4], [0, 4])
+
+    end_time = time.time()
+
+    # Calculate execution time
+    execution_time_ms = (end_time - start_time)
+
+    # Print the execution time in ms
+    print(f"Execution Time: {execution_time_ms:.10f} s")
+
+    pf2.print_path_directions(path)
     
     cv2.imshow("Intersections and Paths", result_image)
     cv2.imwrite("intersections_and_paths.png", result_image)

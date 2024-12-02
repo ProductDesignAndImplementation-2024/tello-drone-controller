@@ -2,6 +2,7 @@ from djitellopy import Tello
 import cv2
 import time
 import numpy as np
+import os
 import image_processing as imgp
 import drone_autopilot as autopilot
 
@@ -9,6 +10,7 @@ tello = Tello()
 tello.connect()
 
 tello.set_video_direction(tello.CAMERA_DOWNWARD)
+#tello.streamon()
 
 cv2.namedWindow("Tello-drone Info", cv2.WINDOW_NORMAL)
 
@@ -72,12 +74,22 @@ def display_tello_info_window(info):
     cv2.imshow("Tello-drone Info", info_image)
 
 def take_picture():
-    frame_read = tello.get_frame_read()
-    cv2.imwrite("picture.png", frame_read.frame)
+    files = os.listdir("pics")
+    numbers = [
+        int(file.split('_')[1].split('.')[0]) for file in files 
+        if file.startswith("picture_") and file.endswith(".png")
+    ]
+    next_number = max(numbers) + 1 if numbers else 0
+    filename = f"pics/picture_{next_number:03}.png"
 
-    original_image = cv2.imread("picture.png", cv2.IMREAD_GRAYSCALE)
+    # Take and save the picture
+    frame_read = tello.get_frame_read()
+    cv2.imwrite(filename, frame_read.frame)
+
+    # Process and save the cropped version
+    original_image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
     cropped_image = original_image[0:240, 0:320]
-    cv2.imwrite("picture.png", cropped_image)
+    cv2.imwrite(filename, cropped_image)
 
 # WASD = moveement
 # E-Q = rotate
