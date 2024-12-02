@@ -7,7 +7,7 @@ import time
 
 
 # Define a function to normalize coordinates to fit a 5x5 grid
-def normalize_coordinates(coordinates, grid_size=5, error_corection = 5):
+def normalize_coordinates(coordinates, grid_size=5, error_corection = 25):
     max_x = 0
     max_y = 0
     min_y = 270
