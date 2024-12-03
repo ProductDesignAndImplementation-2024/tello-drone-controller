@@ -27,18 +27,18 @@ def get_directions(path):
         next_dir = direction(path[i], path[i + 1])
         
         if current_dir == next_dir:
-            directions.append("straight")
+            directions.append("f")
         else:
             if current_dir[0] != 0:  # Moving horizontally
                 if current_dir[0] == next_dir[1]:
-                    directions.append("left")
+                    directions.append("l")
                 else:
-                    directions.append("right")
+                    directions.append("r")
             elif current_dir[1] != 0:  # Moving vertically
                 if current_dir[1] == next_dir[0]:
-                    directions.append("right")
+                    directions.append("r")
                 else:
-                    directions.append("left")
+                    directions.append("l")
         
         current_dir = next_dir
     
