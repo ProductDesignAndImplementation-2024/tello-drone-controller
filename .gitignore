@@ -1,1 +1,13 @@
-*/__pycache__/*
+# Ignore virtual environment directories
+venv/
+ .VENV/
+ env/
+ .ENV/
+ # Ignore Python bytecode files
+ __pycache__/ 
+*.py[cod] 
+*.pyc
+ # Ignore other common files and directories 
+*.log 
+*.sqlite3 
+*.swp
