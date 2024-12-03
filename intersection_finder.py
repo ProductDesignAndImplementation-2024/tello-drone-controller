@@ -123,7 +123,7 @@ def a_star_path(binary_image, start, end, intersections, directional_weight=(1, 
     return []  # No path found
 
 if __name__ == "__main__":
-    image_path = "processed.png"
+    image_path = "processed1.png"
     intersections, result_image, binary = find_grid_intersections(
         image_path, min_pixels=5, border_margin=5, max_density=0.3, vicinity_size=10, min_distance=10
     )
