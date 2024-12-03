@@ -60,7 +60,6 @@ def __fms(grid, position, end, path):
                 if [next_x,next_y] not in visited:
                     possible_moves.append([next_x, next_y])
     if not possible_moves:
-        # print (path)
         path.remove(position)
         return None
     
@@ -69,6 +68,7 @@ def __fms(grid, position, end, path):
         result = __fms(grid, i, end, path)
         if result:
             return result
+        
 def find_path (grid, start, end):
     global max_y 
     max_y = len(grid)
