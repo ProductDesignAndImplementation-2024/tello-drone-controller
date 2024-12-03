@@ -42,9 +42,9 @@ def bfs_find_path(matrix2, start, end):
 
 def print_path_directions(path):
     # always starts from (4, 4)
-    if path[0] != (4, 4):
-        print("path didnt start from 4,4")
-        return
+    #if path[0] != (4, 4):
+    #    print("path didnt start from 4,4")
+    #    return
     
     def direction(p1, p2):
         dx = p2[0] - p1[0]

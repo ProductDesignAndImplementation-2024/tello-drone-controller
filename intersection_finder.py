@@ -7,7 +7,7 @@ import time
 
 
 # Define a function to normalize coordinates to fit a 5x5 grid
-def normalize_coordinates(coordinates, grid_size=5, error_corection = 5):
+def normalize_coordinates(coordinates, grid_size=5, error_corection = 25):
     max_x = 0
     max_y = 0
     min_y = 270
@@ -125,7 +125,7 @@ def a_star_path(binary_image, start, end, intersections, directional_weight=(1, 
 if __name__ == "__main__":
     image_path = "processed1.png"
     intersections, result_image, binary = find_grid_intersections(
-        image_path, min_pixels=5, border_margin=0, max_density=0.3, vicinity_size=10, min_distance=10
+        image_path, min_pixels=5, border_margin=5, max_density=0.3, vicinity_size=10, min_distance=10
     )
 
     normcoord = normalize_coordinates (intersections)
@@ -158,28 +158,6 @@ if __name__ == "__main__":
                         for point in path:
                             cv2.circle(result_image, point, 1, (0, 255, 0), -1)
     
-    
-    start_time = time.time()
-
-    for i in paths_cord:
-        if (i[0] != i[1]):
-            matrix[i[0][1] + i[1][1]][i[0][0] + i[1][0]] = '-'
-            #print(f"Path found between {i[0]} and {i[1]} path ({i[0][0] + i[1][0]}, {i[0][1] + i[1][1]})")
-    
-    #for i in matrix:
-        #print (i)
-    
-
-    print(pf.find_path(matrix,[8,8],[8,0]))
-    end_time = time.time()
-
-    # Calculate execution time
-    execution_time_ms = end_time - start_time
-
-# Print the execution time in ms
-    print(f"Execution Time: {execution_time_ms:.10f} s")
-
-
     start_time = time.time()
     for i in paths_cord:
         start_norm, end_norm = i
@@ -190,13 +168,26 @@ if __name__ == "__main__":
             matrix2[x1][y1].append((x2, y2))
             matrix2[x2][y2].append((x1, y1))
 
-    '''
+    
     # Print the populated matrix2 with connections
     for i in range(5):
         for j in range(5):
             print(f"Node ({i},{j}) is connected to: {matrix2[i][j]}")
-    '''
+
     path = pf2.find_path(matrix2, [4, 4], [0, 4])
+
+    if path != None:
+        for i in range(len(path) - 1):
+            # Get the normalized coordinates of the start and end points.
+            start_norm = path[i]
+            end_norm = path[i + 1]
+
+            # Map the normalized coordinates to pixel coordinates.
+            start_pixel = next(key for key, value in coordinate_dict.items() if value == start_norm)
+            end_pixel = next(key for key, value in coordinate_dict.items() if value == end_norm)
+
+            # Draw a line between these two points in blue (BGR color: (255, 0, 0)).
+            cv2.line(result_image, start_pixel, end_pixel, (255, 0, 0), thickness=2)
 
     end_time = time.time()
 
@@ -206,8 +197,8 @@ if __name__ == "__main__":
     # Print the execution time in ms
     print(f"Execution Time: {execution_time_ms:.10f} s")
 
-    pf2.print_path_directions(path)
-    
+    #pf2.print_path_directions(path)
+
     cv2.imshow("Intersections and Paths", result_image)
     cv2.imwrite("intersections_and_paths.png", result_image)
     cv2.waitKey(0)
