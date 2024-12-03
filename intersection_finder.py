@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import heapq
 import pathfinder as pf
+import pathfinder_v2 as pf2
 import sys
 import os
 
