@@ -5,12 +5,14 @@ import numpy as np
 import os
 import image_processing as imgp
 import drone_autopilot as autopilot
+import drone_manual_control as manual_control
+import image_utils as img_utils
 
 tello = Tello()
 tello.connect()
+tello.streamon()
 
 tello.set_video_direction(tello.CAMERA_DOWNWARD)
-#tello.streamon()
 
 cv2.namedWindow("Tello-drone Info", cv2.WINDOW_NORMAL)
 
@@ -46,14 +48,14 @@ def fetch_tello_info_window_data():
     }
 
 def display_tello_info_window(info):
-    info_image = np.zeros((600, 800, 3), dtype=np.uint8)
+    info_image = np.zeros((480, 600, 3), dtype=np.uint8)
 
     font = cv2.FONT_HERSHEY_COMPLEX
-    font_scale = 1.0
+    font_scale = 0.6
     color = (255, 255, 255)
     line_type = 2
 
-    y_offset = 30
+    y_offset = 15
     for key, value in info.items():
         text = f"{key}: {value}"
 
@@ -74,12 +76,8 @@ def display_tello_info_window(info):
     cv2.imshow("Tello-drone Info", info_image)
 
 def take_picture():
-    files = os.listdir("pics")
-    numbers = [
-        int(file.split('_')[1].split('.')[0]) for file in files 
-        if file.startswith("picture_") and file.endswith(".png")
-    ]
-    next_number = max(numbers) + 1 if numbers else 0
+    latest_number = img_utils.get_latest_picture_number();
+    next_number = latest_number  +1 if latest_number != None else 0
     filename = f"pics/picture_{next_number:03}.png"
 
     # Take and save the picture
@@ -90,34 +88,6 @@ def take_picture():
     original_image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
     cropped_image = original_image[0:240, 0:320]
     cv2.imwrite(filename, cropped_image)
-
-# WASD = moveement
-# E-Q = rotate
-# R-F = up-down
-# K = flip forward
-def movement_controls(key):
-    if key & 0xFF == ord('w'):
-        tello.move_forward(20)
-    elif key &0xFF == ord('s'):
-        tello.move_back(20)
-    elif key &0xFF == ord('a'):
-        tello.move_left(20)
-    elif key &0xFF == ord('d'):
-        tello.move_right(20)
-    elif key &0xFF == ord('e'):
-        tello.rotate_clockwise(20)
-    elif key &0xFF == ord('q'):
-        tello.rotate_counter_clockwise(20)
-    elif key &0xFF == ord('r'):
-        tello.move_up(20)
-    elif key &0xFF == ord('f'):
-        tello.move_down(20)
-    elif key &0xFF == ord('k'):
-        tello.flip_forward()
-    else:
-        return False
-    
-    return True
 
 autopilot_is_enabled = False
 landingpad_old_loc = (-1, -1)
@@ -146,6 +116,14 @@ def run_autopilot(landingpad_xy):
 
     return True
 
+def take_grid_picture():
+    take_picture()
+
+    # rotate picture
+    # align grid if needed
+    # intersection_finder.py => if ok return to landingpad
+    # => if not ok, realign + new picture
+
 while True:
     tello_info = fetch_tello_info_window_data()
     display_tello_info_window(tello_info)
@@ -158,12 +136,12 @@ while True:
     if key & 0xFF == ord('x'):
         break
     elif key & 0xFF == ord('t'):
-        tello.streamon()
+        #tello.streamon()
         tello.takeoff()
     elif key & 0xFF == ord('l'):
         landingpad_old_loc = (-1, -1)
         tello.land()
-        tello.streamoff()
+        #tello.streamoff()
     elif key & 0xFF == ord('p'):
         take_picture()
     elif key & 0xFF == ord('o'):
@@ -184,7 +162,7 @@ while True:
             autopilot_is_enabled = True
             if autopilot_is_enabled == False:
                 landingpad_old_loc = (-1, -1)
-    elif movement_controls(key):
+    elif manual_control.move_if_required(tello, key):
         continue
     else:
         if autopilot_is_enabled:

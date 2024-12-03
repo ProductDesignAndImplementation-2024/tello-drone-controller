@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import math
 import os
+import image_utils as img_utils
 
 def nothing(x):
     pass
@@ -20,25 +21,11 @@ max_area = 800
 cv2.createTrackbar("Min Area", "Before and After", min_area, 6000, nothing)
 cv2.createTrackbar("Max Area", "Before and After", max_area, 6000, nothing)
 
-
-
 def display_picture():
-    files = os.listdir("pics")
-    image_files = [
-        file for file in files if file.startswith("picture_") and file.endswith(".png")
-    ]
-    
-    # If there are image files, get the latest one based on numeric suffix
-    if image_files:
-        # Extract numbers and find the latest image
-        numbers = [
-            int(file.split('_')[1].split('.')[0]) for file in image_files
-        ]
-        latest_number = max(numbers)
-        latest_filename = f"pics/picture_{latest_number:03}.png"
-    else:
-        print("No pictures found.")
+    latest_number = img_utils.get_latest_picture_number()
+    if latest_number == None:
         return None
+    latest_filename = f"pics/picture_{latest_number:03}.png"
 
     # Read the latest image
     original_image = cv2.imread(latest_filename, cv2.IMREAD_GRAYSCALE)
@@ -99,7 +86,7 @@ def find_landing_pad(processed_image, landingpad_old_loc):
         landingpad_xy = ((x + (w / 2), y + (h / 2)))
     
     # Show the result
-    cv2.imshow("Before and After", processed_image_2)
+    #cv2.imshow("Before and After", processed_image_2)
     return landingpad_xy
 
 if __name__ == "__main__":
