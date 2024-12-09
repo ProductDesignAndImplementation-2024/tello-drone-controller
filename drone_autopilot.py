@@ -81,6 +81,25 @@ def calculate_direction_vector(right_angle_point, avg_point):
     
     return (dx, dy), magnitude
 
+def get_direction_vector(a, b, normalized = True):
+    dir_x = a[0] - b[0]
+    dir_y = a[1] - b[1]
+    if normalized == False:
+        return dir_x, dir_y
+
+    magnitude = math.sqrt(dir_x**2 + dir_y**2)
+    if magnitude == 0:
+        return 0, 0
+
+    return dir_x / magnitude, dir_y / magnitude
+
+def calculate_angle_between_dir_vectors(v1, v2):
+    dot_product = v1[0] * v2[0] + v1[1] * v2[1]
+    dot_product = max(min(dot_product, 1.0), -1.0)
+
+    angle_radians = math.acos(dot_product)
+    return angle_radians
+
 def detect_triangle_shape(image, tolerance = 20):
     # Step 1: Preprocess the image
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -153,9 +172,23 @@ def detect_triangle_shape(image, tolerance = 20):
                              int(right_angle_point[1] + direction_vector[1] * scale))
                 cv2.arrowedLine(image, right_angle_point, end_point, (0, 255, 255), 2, tipLength=0.05)
 
+                dir_x, dir_y = get_direction_vector(right_angle_point, end_point, False)
+                print(dir_x)
+                print(dir_y)
+                dir_x, dir_y = get_direction_vector(right_angle_point, end_point, True)
+                print(dir_x)
+                print(dir_y)
+
+                # bottom right == (-0.7071067811865475, -0.7071067811865475)
+                angle = calculate_angle_between_dir_vectors((-0.7071067811865475, -0.7071067811865475), (dir_x, dir_y))
+                angle_degrees = math.degrees(angle)
+
+                print(angle)
+                print(angle_degrees)
+
 if __name__ == "__main__":
     #image = cv2.imread('align_test.png')
-    image = cv2.imread('processed.png')
+    image = cv2.imread('processed1.png')
 
     detect_triangle_shape(image)
 
