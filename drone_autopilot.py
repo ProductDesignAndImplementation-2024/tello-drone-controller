@@ -96,8 +96,12 @@ def get_direction_vector(a, b, normalized = True):
 def calculate_angle_between_dir_vectors(v1, v2):
     dot_product = v1[0] * v2[0] + v1[1] * v2[1]
     dot_product = max(min(dot_product, 1.0), -1.0)
-
     angle_radians = math.acos(dot_product)
+    
+    cross_product = v1[0] * v2[1] - v1[1] * v2[0]
+    if cross_product < 0:
+        angle_radians = -angle_radians
+
     return angle_radians
 
 def detect_triangle_shape(image, tolerance = 20):
@@ -186,11 +190,71 @@ def detect_triangle_shape(image, tolerance = 20):
                 print(angle)
                 print(angle_degrees)
 
+                return angle_degrees
+    # no triangle found
+    return None
+
+def try_get_triangle_angle(tello: Tello):
+    angle = detect_triangle_shape(image)
+    for i in range(0, 5):
+        if angle != None:
+            break
+
+        if i % 2:
+            tello.move_down(20)
+        else:
+            tello.move_up(20)
+
+        angle = detect_triangle_shape(image)
+
+    return angle
+
+def drone_autopilot_takeoff(tello: Tello):
+    tello.takeoff()
+    tello.move_up(30) # test for correct amount
+
+    auto_align = align_drone_correctly()
+    if auto_align == False:
+        # manual control required
+        cv2.waitKey(0)
+
+    # test for correct direction + amount
+    tello.move_right(100)
+
+def drone_autopilot_take_pictures():
+    # take grid pictures
+    # check if valid & intersections found
+    # try find grid center
+    # enable manual control if required
+    return
+
+def align_drone_correctly(tello: Tello):
+    # take picture
+
+    for i in range(0, 3):
+        angle = try_get_triangle_angle(tello)
+        if angle == None:
+            return False # no triangle found (manual control required?)
+        
+        if 1 > angle > -1: # angle small enough
+            return True
+        
+        if angle < 0:
+            tello.rotate_clockwise(angle)
+        else:
+            tello.rotate_counter_clockwise(angle)
+
+        if 1 > angle > -1:
+            return True
+
+    return False # failed to align => manual control
+
 if __name__ == "__main__":
     #image = cv2.imread('align_test.png')
     image = cv2.imread('processed1.png')
 
-    detect_triangle_shape(image)
+    angle = detect_triangle_shape(image)
+    print(angle)
 
     cv2.imshow('shapes', image)
     cv2.waitKey(0)
