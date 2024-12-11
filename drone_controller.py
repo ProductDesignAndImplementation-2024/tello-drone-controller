@@ -7,6 +7,7 @@ import image_processing as imgp
 import drone_autopilot as autopilot
 import drone_manual_control as manual_control
 import image_utils as img_utils
+import intersection_finder as int_finder
 
 tello = Tello()
 tello.connect()
@@ -145,7 +146,29 @@ while True:
     elif key & 0xFF == ord('p'):
         take_picture()
     elif key & 0xFF == ord('m'):
-        print(autopilot.align_drone_correctly(tello))
+        rotate = autopilot.align_drone_correctly(tello)
+        print(rotate)
+        if rotate == False:
+            continue
+
+        tello.move_up(70)
+        key2 = cv2.waitKey(0)
+        if key2 & 0xFF == ord('x'):
+            tello.land()
+            break
+        tello.move_right(85)
+        take_picture()
+        time.sleep(0.1)
+        processed_image = imgp.display_picture()
+        cv2.imwrite("processed.png", processed_image)
+
+        result_image = int_finder.find_path(False,True)
+        #if result_image != None:
+        cv2.imshow("Intersections and Paths", result_image)
+        cv2.imwrite("intersections_and_paths.png", result_image)
+        #print(path)
+
+        tello.move_left(85)
     elif key & 0xFF == ord('o'):
         take_picture()
         time.sleep(0.1)

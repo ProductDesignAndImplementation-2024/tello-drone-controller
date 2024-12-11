@@ -1,18 +1,14 @@
 from collections import deque
 
-# A helper function to perform BFS to find the optimal path
 def bfs_find_path(matrix2, start, end):
-    # Convert start and end to tuples to ensure they are hashable
     start = tuple(start)
     end = tuple(end)
 
-    # If start and end are the same, no need to do BFS
     if start == end:
         return [start]
     
-    # Initialize visited set and the queue
     visited = set()
-    queue = deque([(start, [start])])  # Queue holds tuples of (current_node, path_to_current_node)
+    queue = deque([(start, [start])])
     
     while queue:
         current_node, path = queue.popleft()
@@ -40,17 +36,13 @@ def bfs_find_path(matrix2, start, end):
     # If no path is found, return None
     return None
 
-# Now we use this BFS-based function inside `find_path`
 def find_path(grid, start, end, Debbugger=False):
-    # Call bfs_find_path to get the optimal path from start to end
     path = bfs_find_path(grid, start, end)
-    if path:
-        # Print the result
-        if Debbugger:
+    
+    if Debbugger:
+        if path:
             print(f"Optimal path from {start} to {end}: {path}")
-        return path
-    else:
-        # Print the result
-        if Debbugger:
+        else:
             print(f"No path found from {start} to {end}")
-        return path
+    
+    return path

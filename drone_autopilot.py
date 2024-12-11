@@ -5,6 +5,7 @@ import math
 import numpy as np
 import image_processing as imgp
 import image_utils as img_utils
+import intersection_finder as int_finder
 
 def rotate_if_needed(landingpad):
     x, y = landingpad
@@ -269,6 +270,36 @@ def align_drone_correctly(tello: Tello):
             return True
 
     return False # failed to align => manual control
+
+def autopilot(tello: Tello):
+    rotate = autopilot.align_drone_correctly(tello)
+    print(rotate)
+    if rotate == False:
+        return None
+
+    tello.move_up(70)
+    key2 = cv2.waitKey(0)
+    if key2 & 0xFF == ord('x'):
+        tello.land()
+        return None
+    tello.move_right(85)
+    take_picture()
+    time.sleep(0.1)
+    processed_image = imgp.display_picture()
+    cv2.imwrite("processed.png", processed_image)
+
+    '''
+    result_image = int_finder.find_path(False,True)
+    cv2.imshow("Intersections and Paths", result_image)
+    cv2.imwrite("intersections_and_paths.png", result_image)
+    '''
+
+    path = int_finder.find_path(False, False)
+    # check if valid path
+
+    tello.move_left(85)
+
+    return path
 
 if __name__ == "__main__":
     #image = cv2.imread('align_test.png')
