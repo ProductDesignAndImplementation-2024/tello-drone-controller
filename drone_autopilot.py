@@ -6,6 +6,7 @@ import numpy as np
 import image_processing as imgp
 import image_utils as img_utils
 import intersection_finder as int_finder
+import json
 
 def rotate_if_needed(landingpad):
     x, y = landingpad
@@ -299,7 +300,8 @@ def autopilot(tello: Tello):
 
     tello.move_left(85)
 
-    return path
+    json_str = json.dumps(path)
+    return json_str
 
 if __name__ == "__main__":
     #image = cv2.imread('align_test.png')

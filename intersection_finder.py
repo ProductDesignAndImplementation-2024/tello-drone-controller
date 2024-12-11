@@ -5,7 +5,7 @@ import pathfinder as pf
 import pathfinder_v2 as pf2
 import sys
 import os
-
+import json
 
 # Define a function to normalize coordinates to fit a 5x5 grid
 def normalize_coordinates(coordinates, grid_size=5, error_corection = 5):
@@ -204,6 +204,8 @@ def find_path(oldPathfinder = False, Debugger = False):
 if __name__ == "__main__":
     path = find_path(False,False)
     print(path)
+    json_str = json.dumps(path)
+    print(json_str)
 
     result_image = find_path(False,True)
     cv2.imshow("Intersections and Paths", result_image)
