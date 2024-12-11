@@ -144,6 +144,8 @@ while True:
         #tello.streamoff()
     elif key & 0xFF == ord('p'):
         take_picture()
+    elif key & 0xFF == ord('m'):
+        print(autopilot.align_drone_correctly(tello))
     elif key & 0xFF == ord('o'):
         take_picture()
         time.sleep(0.1)

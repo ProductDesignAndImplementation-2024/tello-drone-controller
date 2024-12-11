@@ -4,6 +4,7 @@ import time
 import math
 import numpy as np
 import image_processing as imgp
+import image_utils as img_utils
 
 def rotate_if_needed(landingpad):
     x, y = landingpad
@@ -194,7 +195,25 @@ def detect_triangle_shape(image, tolerance = 20):
     # no triangle found
     return None
 
+def take_picture(tello: Tello):
+    latest_number = img_utils.get_latest_picture_number();
+    next_number = latest_number  +1 if latest_number != None else 0
+    filename = f"pics/picture_{next_number:03}.png"
+
+    # Take and save the picture
+    frame_read = tello.get_frame_read()
+    cv2.imwrite(filename, frame_read.frame)
+
+    # Process and save the cropped version
+    original_image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+    cropped_image = original_image[0:240, 0:320]
+    cv2.imwrite(filename, cropped_image)
+
 def try_get_triangle_angle(tello: Tello):
+    take_picture(tello)
+    imgp.save_processed_image()
+    image = cv2.imread('processed.png')
+
     angle = detect_triangle_shape(image)
     for i in range(0, 5):
         if angle != None:
@@ -205,6 +224,10 @@ def try_get_triangle_angle(tello: Tello):
         else:
             tello.move_up(20)
 
+        take_picture(tello)
+        imgp.save_processed_image()
+        image = cv2.imread('processed.png')
+
         angle = detect_triangle_shape(image)
 
     return angle
@@ -213,7 +236,7 @@ def drone_autopilot_takeoff(tello: Tello):
     tello.takeoff()
     tello.move_up(30) # test for correct amount
 
-    auto_align = align_drone_correctly()
+    auto_align = align_drone_correctly(tello)
     if auto_align == False:
         # manual control required
         cv2.waitKey(0)
@@ -229,8 +252,6 @@ def drone_autopilot_take_pictures():
     return
 
 def align_drone_correctly(tello: Tello):
-    # take picture
-
     for i in range(0, 3):
         angle = try_get_triangle_angle(tello)
         if angle == None:
@@ -239,10 +260,10 @@ def align_drone_correctly(tello: Tello):
         if 1 > angle > -1: # angle small enough
             return True
         
-        if angle < 0:
-            tello.rotate_clockwise(angle)
+        if angle > 0:
+            tello.rotate_clockwise(int(abs(angle)))
         else:
-            tello.rotate_counter_clockwise(angle)
+            tello.rotate_counter_clockwise(int(abs(angle)))
 
         if 1 > angle > -1:
             return True
@@ -251,7 +272,7 @@ def align_drone_correctly(tello: Tello):
 
 if __name__ == "__main__":
     #image = cv2.imread('align_test.png')
-    image = cv2.imread('processed1.png')
+    image = cv2.imread('processed.png')
 
     angle = detect_triangle_shape(image)
     print(angle)
