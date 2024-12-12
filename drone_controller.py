@@ -130,6 +130,7 @@ def drone_get_path():
     tello.takeoff()
     path = autopilot.autopilot(tello)
     tello.land()
+    print(path)
     return path
 
 while True:

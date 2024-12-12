@@ -229,11 +229,6 @@ def try_get_triangle_angle(tello: Tello):
         if angle != None:
             break
 
-        if i % 2:
-            tello.move_down(20)
-        else:
-            tello.move_up(20)
-
         take_picture(tello)
         imgp.save_processed_image()
         image = cv2.imread('processed.png')
@@ -358,7 +353,25 @@ def autopilot(tello: Tello):
 
     tello.move_right(70)
 
-    for i in range(0, 8):
+    for i in range(0, 4):
+        loc = try_get_triangle_loc(tello)
+        x, y = move_over_triangle(loc, 20)
+
+        amount = 20
+
+        if x == 1:
+            tello.move_back(amount)
+        elif x == -1:
+            tello.move_forward(amount)
+        elif y == 1:
+            tello.move_left(amount)
+        elif y == -1:
+            tello.move_right(amount)
+        else:
+            break
+
+    tello.move_down(30)
+    for i in range(0, 4):
         loc = try_get_triangle_loc(tello)
         x, y = move_over_triangle(loc, 20)
 
