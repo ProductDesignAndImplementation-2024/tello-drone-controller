@@ -77,9 +77,10 @@ def display_tello_info_window(info):
     cv2.imshow("Tello-drone Info", info_image)
 
 def take_picture():
-    latest_number = img_utils.get_latest_picture_number();
-    next_number = latest_number  +1 if latest_number != None else 0
-    filename = f"pics/picture_{next_number:03}.png"
+    #latest_number = img_utils.get_latest_picture_number();
+    #next_number = latest_number  +1 if latest_number != None else 0
+    #filename = f"pics/picture_{next_number:03}.png"
+    filename = "picture.png"
 
     # Take and save the picture
     frame_read = tello.get_frame_read()
@@ -126,7 +127,10 @@ def take_grid_picture():
     # => if not ok, realign + new picture
 
 def drone_get_path():
-    return autopilot.autopilot(tello)
+    tello.takeoff()
+    path = autopilot.autopilot(tello)
+    tello.land()
+    return path
 
 while True:
     tello_info = fetch_tello_info_window_data()
@@ -149,29 +153,7 @@ while True:
     elif key & 0xFF == ord('p'):
         take_picture()
     elif key & 0xFF == ord('m'):
-        rotate = autopilot.align_drone_correctly(tello)
-        print(rotate)
-        if rotate == False:
-            continue
-
-        tello.move_up(70)
-        key2 = cv2.waitKey(0)
-        if key2 & 0xFF == ord('x'):
-            tello.land()
-            break
-        tello.move_right(85)
-        take_picture()
-        time.sleep(0.1)
-        processed_image = imgp.display_picture()
-        cv2.imwrite("processed.png", processed_image)
-
-        result_image = int_finder.find_path(False,True)
-        #if result_image != None:
-        cv2.imshow("Intersections and Paths", result_image)
-        cv2.imwrite("intersections_and_paths.png", result_image)
-        #print(path)
-
-        tello.move_left(85)
+        print(drone_get_path())
     elif key & 0xFF == ord('o'):
         take_picture()
         time.sleep(0.1)

@@ -8,7 +8,7 @@ import os
 import json
 
 # Define a function to normalize coordinates to fit a 5x5 grid
-def normalize_coordinates(coordinates, grid_size=5, error_corection = 5):
+def normalize_coordinates(coordinates, grid_size=5, error_corection = 25):
     max_x = 0
     max_y = 0
     min_y = 270
@@ -124,7 +124,7 @@ def a_star_path(binary_image, start, end, intersections, directional_weight=(1, 
 
 
 def find_path(oldPathfinder = False, Debugger = False):
-    image_path = os.path.dirname(__file__) + "/processed.png"
+    image_path = os.path.dirname(__file__) + "/grid.png"
     intersections, result_image, binary = find_grid_intersections(
         image_path, min_pixels=5, border_margin=5, max_density=0.3, vicinity_size=15, min_distance=10
     )
@@ -174,7 +174,7 @@ def find_path(oldPathfinder = False, Debugger = False):
             for j in range(5):
                 print(f"Node ({i},{j}) is connected to: {matrix2[i][j]}")
 
-    path = pf2.find_path(matrix2, [4, 4], [0, 4], True)
+    path = pf2.find_path(matrix2, [0, 4], [4, 4], True)
     if Debugger:
         if path != None:
             for i in range(len(path) - 1):
@@ -189,8 +189,8 @@ def find_path(oldPathfinder = False, Debugger = False):
                 # Draw a line between these two points in blue (BGR color: (255, 0, 0)).
                 cv2.line(result_image, start_pixel, end_pixel, (255, 0, 0), thickness=2)
 
-        path.append([5,0])
-        path.insert(0, [4,5])
+        #path.append([5,0])
+        #path.insert(0, [4,5])
         return result_image
     else:
         if path != None:
@@ -199,7 +199,6 @@ def find_path(oldPathfinder = False, Debugger = False):
             return pf.get_directions(path)
         else:
             return []
-
 
 if __name__ == "__main__":
     path = find_path(False,False)

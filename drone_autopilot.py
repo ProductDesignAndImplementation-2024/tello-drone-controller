@@ -24,6 +24,21 @@ def move_if_needed(landingpad):
         return 1
     return 0
 
+def move_over_triangle(coords, offset = 25):
+    x, y = coords
+    ret_x = 0
+    ret_y = 0
+    if x < 160 - offset:
+        ret_x = -1
+    elif x > 160 + offset:
+        ret_x = 1
+    
+    if y < 120 - offset:
+        ret_y = -1
+    elif y > 120 + offset:
+        ret_y = 1
+    return (ret_x, ret_y)
+
 def calculate_angle(p1, p2, p3):
     """
     Calculate the angle at p2 formed by the lines p1->p2 and p2->p3 using the dot product.
@@ -179,28 +194,21 @@ def detect_triangle_shape(image, tolerance = 20):
                              int(right_angle_point[1] + direction_vector[1] * scale))
                 cv2.arrowedLine(image, right_angle_point, end_point, (0, 255, 255), 2, tipLength=0.05)
 
-                dir_x, dir_y = get_direction_vector(right_angle_point, end_point, False)
-                print(dir_x)
-                print(dir_y)
                 dir_x, dir_y = get_direction_vector(right_angle_point, end_point, True)
-                print(dir_x)
-                print(dir_y)
 
                 # bottom right == (-0.7071067811865475, -0.7071067811865475)
                 angle = calculate_angle_between_dir_vectors((-0.7071067811865475, -0.7071067811865475), (dir_x, dir_y))
                 angle_degrees = math.degrees(angle)
 
-                print(angle)
-                print(angle_degrees)
-
-                return angle_degrees
+                return angle_degrees, right_angle_point
     # no triangle found
-    return None
+    return None, None
 
 def take_picture(tello: Tello):
-    latest_number = img_utils.get_latest_picture_number();
-    next_number = latest_number  +1 if latest_number != None else 0
-    filename = f"pics/picture_{next_number:03}.png"
+    #latest_number = img_utils.get_latest_picture_number();
+    #next_number = latest_number  +1 if latest_number != None else 0
+    #filename = f"pics/picture_{next_number:03}.png"
+    filename = "picture.png"
 
     # Take and save the picture
     frame_read = tello.get_frame_read()
@@ -216,7 +224,7 @@ def try_get_triangle_angle(tello: Tello):
     imgp.save_processed_image()
     image = cv2.imread('processed.png')
 
-    angle = detect_triangle_shape(image)
+    angle, loc = detect_triangle_shape(image)
     for i in range(0, 5):
         if angle != None:
             break
@@ -230,9 +238,33 @@ def try_get_triangle_angle(tello: Tello):
         imgp.save_processed_image()
         image = cv2.imread('processed.png')
 
-        angle = detect_triangle_shape(image)
+        angle, loc = detect_triangle_shape(image)
 
     return angle
+
+def try_get_triangle_loc(tello: Tello):
+    take_picture(tello)
+    imgp.save_processed_image()
+    image = cv2.imread('processed.png')
+
+    angle, loc = detect_triangle_shape(image)
+    for i in range(0, 5):
+        if loc != None:
+            break
+
+        if i % 2:
+            tello.move_down(20)
+        else:
+            tello.move_up(20)
+
+        take_picture(tello)
+        imgp.save_processed_image()
+        image = cv2.imread('processed.png')
+
+        angle, loc = detect_triangle_shape(image)
+
+    return loc
+        
 
 def drone_autopilot_takeoff(tello: Tello):
     tello.takeoff()
@@ -254,12 +286,34 @@ def drone_autopilot_take_pictures():
     return
 
 def align_drone_correctly(tello: Tello):
-    for i in range(0, 3):
+    for i in range(0, 8):
+        loc = try_get_triangle_loc(tello)
+        x, y = move_over_triangle(loc, 30)
+
+        amount = 20
+
+        if x == 1:
+            tello.move_back(amount)
+        elif x == -1:
+            tello.move_forward(amount)
+        elif y == 1:
+            tello.move_left(amount)
+        elif y == -1:
+            tello.move_right(amount)
+        else:
+            break
+
+        #key = cv2.waitKey(0)
+        #if key & 0xFF == ord('x'):
+        #    tello.land()
+        #    return False
+
+    for i in range(0, 8):
         angle = try_get_triangle_angle(tello)
         if angle == None:
             return False # no triangle found (manual control required?)
         
-        if 1 > angle > -1: # angle small enough
+        if 2 > angle > -2: # angle small enough
             return True
         
         if angle > 0:
@@ -267,7 +321,7 @@ def align_drone_correctly(tello: Tello):
         else:
             tello.rotate_counter_clockwise(int(abs(angle)))
 
-        if 1 > angle > -1:
+        if 2 > angle > -2:
             return True
 
     return False # failed to align => manual control
@@ -276,21 +330,22 @@ def autopilot(tello: Tello):
     #tello.takeoff()
     #tello.streamon()
 
-    rotate = autopilot.align_drone_correctly(tello)
+    rotate = align_drone_correctly(tello)
     print(rotate)
     if rotate == False:
         return None
 
-    tello.move_up(70)
-    key2 = cv2.waitKey(0)
-    if key2 & 0xFF == ord('x'):
-        tello.land()
-        return None
-    tello.move_right(85)
-    take_picture()
+    tello.move_up(50)
+    #key2 = cv2.waitKey(0)
+    #if key2 & 0xFF == ord('x'):
+    #    tello.land()
+    #    return None
+    tello.move_left(70)
+    take_picture(tello)
     time.sleep(0.1)
     processed_image = imgp.display_picture()
     cv2.imwrite("processed.png", processed_image)
+    cv2.imwrite("grid.png", processed_image)
 
     '''
     result_image = int_finder.find_path(False,True)
@@ -301,7 +356,29 @@ def autopilot(tello: Tello):
     path = int_finder.find_path(False, False)
     # check if valid path
 
-    tello.move_left(85)
+    tello.move_right(70)
+
+    for i in range(0, 8):
+        loc = try_get_triangle_loc(tello)
+        x, y = move_over_triangle(loc, 20)
+
+        amount = 20
+
+        if x == 1:
+            tello.move_back(amount)
+        elif x == -1:
+            tello.move_forward(amount)
+        elif y == 1:
+            tello.move_left(amount)
+        elif y == -1:
+            tello.move_right(amount)
+        else:
+            break
+
+        #key = cv2.waitKey(0)
+        #if key & 0xFF == ord('x'):
+        #    tello.land()
+        #    return False
 
     json_str = json.dumps(path)
     return json_str
