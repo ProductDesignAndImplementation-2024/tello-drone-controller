@@ -12,7 +12,7 @@ def save_processed_image():
     cv2.imwrite("processed.png", image)
 
 cv2.namedWindow("Before and After")
-cv2.createTrackbar("Threshold", "Before and After", 25, 255, nothing)
+#cv2.createTrackbar("Threshold", "Before and After", 25, 255, nothing)
 
 min_area = 100
 max_area = 800
@@ -22,21 +22,22 @@ cv2.createTrackbar("Min Area", "Before and After", min_area, 6000, nothing)
 cv2.createTrackbar("Max Area", "Before and After", max_area, 6000, nothing)
 
 def display_picture():
-    latest_number = img_utils.get_latest_picture_number()
-    if latest_number == None:
-        return None
-    latest_filename = f"pics/picture_{latest_number:03}.png"
+    #latest_number = img_utils.get_latest_picture_number()
+    #if latest_number == None:
+    #    return None
+    #latest_filename = f"pics/picture_{latest_number:03}.png"
+    filename = f"{os.path.abspath(os.getcwd())}/picture.png"
 
     # Read the latest image
-    original_image = cv2.imread(latest_filename, cv2.IMREAD_GRAYSCALE)
+    original_image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
 
     # If the image was loaded successfully
     if original_image is None:
-        print(f"Failed to load {latest_filename}.")
+        print(f"Failed to load {filename}.")
         return None
 
     # Get the threshold value from trackbar
-    threshold_value = cv2.getTrackbarPos("Threshold", "Before and After")
+    threshold_value = 59 # cv2.getTrackbarPos("Threshold", "Before and After")
 
     # Apply thresholding to create a binary inverse image
     _, processed_image = cv2.threshold(original_image, threshold_value, 255, cv2.THRESH_BINARY_INV)

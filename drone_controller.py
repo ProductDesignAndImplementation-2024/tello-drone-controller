@@ -7,6 +7,7 @@ import image_processing as imgp
 import drone_autopilot as autopilot
 import drone_manual_control as manual_control
 import image_utils as img_utils
+import intersection_finder as int_finder
 
 tello = Tello()
 tello.connect()
@@ -76,9 +77,10 @@ def display_tello_info_window(info):
     cv2.imshow("Tello-drone Info", info_image)
 
 def take_picture():
-    latest_number = img_utils.get_latest_picture_number();
-    next_number = latest_number  +1 if latest_number != None else 0
-    filename = f"pics/picture_{next_number:03}.png"
+    #latest_number = img_utils.get_latest_picture_number();
+    #next_number = latest_number  +1 if latest_number != None else 0
+    #filename = f"pics/picture_{next_number:03}.png"
+    filename = f"{os.path.abspath(os.getcwd())}/picture.png"
 
     # Take and save the picture
     frame_read = tello.get_frame_read()
@@ -124,6 +126,14 @@ def take_grid_picture():
     # intersection_finder.py => if ok return to landingpad
     # => if not ok, realign + new picture
 
+def drone_get_path():
+    tello.takeoff()
+    path = autopilot.autopilot(tello)
+    tello.land()
+    print(path)
+    return path
+
+
 while True:
     tello_info = fetch_tello_info_window_data()
     display_tello_info_window(tello_info)
@@ -144,6 +154,8 @@ while True:
         #tello.streamoff()
     elif key & 0xFF == ord('p'):
         take_picture()
+    elif key & 0xFF == ord('m'):
+        print(drone_get_path())
     elif key & 0xFF == ord('o'):
         take_picture()
         time.sleep(0.1)
@@ -176,6 +188,7 @@ while True:
             autopilot_is_enabled = run_autopilot(landingpad_xy)
             if autopilot_is_enabled == False:
                 landingpad_old_loc = (-1, -1)
-        
+
+
 cv2.destroyAllWindows()
 tello.end()

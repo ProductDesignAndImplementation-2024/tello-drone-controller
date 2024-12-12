@@ -5,10 +5,10 @@ import pathfinder as pf
 import pathfinder_v2 as pf2
 import sys
 import os
-
+import json
 
 # Define a function to normalize coordinates to fit a 5x5 grid
-def normalize_coordinates(coordinates, grid_size=5, error_corection = 5):
+def normalize_coordinates(coordinates, grid_size=5, error_corection = 25):
     max_x = 0
     max_y = 0
     min_y = 270
@@ -67,7 +67,7 @@ def find_grid_intersections(image_path, min_pixels=5, border_margin=10, max_dens
     for (x, y) in raw_intersections:
         if all(np.sqrt((x - px)**2 + (y - py)**2) >= min_distance for (px, py) in suppressed_intersections):
             suppressed_intersections.append((x, y))
-            cv2.circle(output_image, (x, y), 3, (0, 0, 255), -1)
+            cv2.circle(output_image, (x, y), 5, (0, 0, 255), -1)
 
     return suppressed_intersections, output_image, binary
 
@@ -122,9 +122,9 @@ def a_star_path(binary_image, start, end, intersections, directional_weight=(1, 
 
 
 def find_path(oldPathfinder = False, Debugger = False):
-    image_path = os.path.dirname(__file__) + "/processed.png"
+    image_path = f"{os.path.abspath(os.getcwd())}/grid.png"
     intersections, result_image, binary = find_grid_intersections(
-        image_path, min_pixels=5, border_margin=0, max_density=0.3, vicinity_size=10, min_distance=10
+        image_path, min_pixels=5, border_margin=5, max_density=0.3, vicinity_size=15, min_distance=10
     )
     normcoord = normalize_coordinates (intersections)
     coordinate_dict = {(intersection): norm for (norm, intersection) in normcoord} 
@@ -172,7 +172,8 @@ def find_path(oldPathfinder = False, Debugger = False):
             for j in range(5):
                 print(f"Node ({i},{j}) is connected to: {matrix2[i][j]}")
 
-    path = pf2.find_path(matrix2, [0, 4], [4, 4])
+    path = pf2.find_path(matrix2, [0, 4], [4, 4], True)
+
     if Debugger:
         if path != None:
             for i in range(len(path) - 1):
@@ -186,19 +187,27 @@ def find_path(oldPathfinder = False, Debugger = False):
 
                 # Draw a line between these two points in blue (BGR color: (255, 0, 0)).
                 cv2.line(result_image, start_pixel, end_pixel, (255, 0, 0), thickness=2)
+
+        #path.append([5,0])
+        #path.insert(0, [4,5])
         return result_image
     else:
         if path != None:
-            path.append([5,0])
-            path.insert(0, [4,5])
+            path.append([4,5])
+            path.insert(0, [0,5])
             return pf.get_directions(path)
         else:
             return []
 
-
 if __name__ == "__main__":
+    path = find_path(False,False)
+    print(path)
+    json_str = json.dumps(path)
+    print(json_str)
+
     result_image = find_path(False,True)
     cv2.imshow("Intersections and Paths", result_image)
     cv2.imwrite("intersections_and_paths.png", result_image)
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
