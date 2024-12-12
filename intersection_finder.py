@@ -124,7 +124,7 @@ def a_star_path(binary_image, start, end, intersections, directional_weight=(1, 
 
 
 def find_path(oldPathfinder = False, Debugger = False):
-    image_path = os.path.dirname(__file__) + "/grid.png"
+    image_path = f"{os.path.abspath(os.getcwd())}/grid.png"
     intersections, result_image, binary = find_grid_intersections(
         image_path, min_pixels=5, border_margin=5, max_density=0.3, vicinity_size=15, min_distance=10
     )
@@ -194,8 +194,8 @@ def find_path(oldPathfinder = False, Debugger = False):
         return result_image
     else:
         if path != None:
-            path.append([0,5])
-            path.insert(0, [4,5])
+            path.append([4,5])
+            path.insert(0, [0,5])
             return pf.get_directions(path)
         else:
             return []

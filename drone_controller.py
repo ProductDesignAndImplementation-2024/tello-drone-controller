@@ -80,7 +80,7 @@ def take_picture():
     #latest_number = img_utils.get_latest_picture_number();
     #next_number = latest_number  +1 if latest_number != None else 0
     #filename = f"pics/picture_{next_number:03}.png"
-    filename = "picture.png"
+    filename = f"{os.path.abspath(os.getcwd())}/picture.png"
 
     # Take and save the picture
     frame_read = tello.get_frame_read()

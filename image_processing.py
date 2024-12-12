@@ -26,7 +26,7 @@ def display_picture():
     #if latest_number == None:
     #    return None
     #latest_filename = f"pics/picture_{latest_number:03}.png"
-    filename = "picture.png"
+    filename = f"{os.path.abspath(os.getcwd())}/picture.png"
 
     # Read the latest image
     original_image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)

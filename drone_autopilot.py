@@ -1,5 +1,6 @@
 from djitellopy import Tello
 import cv2
+import os
 import time
 import math
 import numpy as np
@@ -222,7 +223,7 @@ def take_picture(tello: Tello):
 def try_get_triangle_angle(tello: Tello):
     take_picture(tello)
     imgp.save_processed_image()
-    image = cv2.imread('processed.png')
+    image = cv2.imread(f"{os.path.abspath(os.getcwd())}/processed.png")
 
     angle, loc = detect_triangle_shape(image)
     for i in range(0, 5):
@@ -231,7 +232,7 @@ def try_get_triangle_angle(tello: Tello):
 
         take_picture(tello)
         imgp.save_processed_image()
-        image = cv2.imread('processed.png')
+        image = cv2.imread(f"{os.path.abspath(os.getcwd())}/processed.png")
 
         angle, loc = detect_triangle_shape(image)
 
@@ -240,7 +241,7 @@ def try_get_triangle_angle(tello: Tello):
 def try_get_triangle_loc(tello: Tello):
     take_picture(tello)
     imgp.save_processed_image()
-    image = cv2.imread('processed.png')
+    image = cv2.imread(f"{os.path.abspath(os.getcwd())}/processed.png")
 
     angle, loc = detect_triangle_shape(image)
     for i in range(0, 5):
@@ -254,7 +255,7 @@ def try_get_triangle_loc(tello: Tello):
 
         take_picture(tello)
         imgp.save_processed_image()
-        image = cv2.imread('processed.png')
+        image = cv2.imread(f"{os.path.abspath(os.getcwd())}/processed.png")
 
         angle, loc = detect_triangle_shape(image)
 
@@ -339,8 +340,8 @@ def autopilot(tello: Tello):
     take_picture(tello)
     time.sleep(0.1)
     processed_image = imgp.display_picture()
-    cv2.imwrite("processed.png", processed_image)
-    cv2.imwrite("grid.png", processed_image)
+    cv2.imwrite(f"{os.path.abspath(os.getcwd())}/processed.png", processed_image)
+    cv2.imwrite(f"{os.path.abspath(os.getcwd())}/grid.png", processed_image)
 
     '''
     result_image = int_finder.find_path(False,True)
