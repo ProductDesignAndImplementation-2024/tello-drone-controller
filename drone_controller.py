@@ -133,6 +133,7 @@ def drone_get_path():
     print(path)
     return path
 
+
 while True:
     tello_info = fetch_tello_info_window_data()
     display_tello_info_window(tello_info)
@@ -187,6 +188,7 @@ while True:
             autopilot_is_enabled = run_autopilot(landingpad_xy)
             if autopilot_is_enabled == False:
                 landingpad_old_loc = (-1, -1)
-        
+
+
 cv2.destroyAllWindows()
 tello.end()
