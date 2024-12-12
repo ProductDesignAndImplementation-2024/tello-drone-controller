@@ -125,6 +125,9 @@ def take_grid_picture():
     # intersection_finder.py => if ok return to landingpad
     # => if not ok, realign + new picture
 
+def drone_get_path():
+    return autopilot.autopilot(tello)
+
 while True:
     tello_info = fetch_tello_info_window_data()
     display_tello_info_window(tello_info)
