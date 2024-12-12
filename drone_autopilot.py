@@ -273,6 +273,9 @@ def align_drone_correctly(tello: Tello):
     return False # failed to align => manual control
 
 def autopilot(tello: Tello):
+    tello.takeoff()
+    tello.streamon()
+
     rotate = autopilot.align_drone_correctly(tello)
     print(rotate)
     if rotate == False:
