@@ -20,4 +20,5 @@ def drone_autopilot():
     path = autopilot.autopilot(tello)
     tello.land()
     print(path)
+    tello.end()
     return path

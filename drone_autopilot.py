@@ -353,6 +353,7 @@ def autopilot(tello: Tello):
     # check if valid path
 
     tello.move_right(70)
+    tello.flip_forward()
 
     for i in range(0, 4):
         loc = try_get_triangle_loc(tello)
@@ -395,7 +396,7 @@ def autopilot(tello: Tello):
         #    return False
 
     json_str = json.dumps(path)
-    return json_str
+    return path
 
 if __name__ == "__main__":
     #image = cv2.imread('align_test.png')
