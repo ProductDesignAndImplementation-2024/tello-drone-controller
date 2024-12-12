@@ -199,15 +199,20 @@ def find_path(oldPathfinder = False, Debugger = False):
         else:
             return []
 
-if __name__ == "__main__":
+def main():
     path = find_path(False,False)
     print(path)
     json_str = json.dumps(path)
     print(json_str)
 
     result_image = find_path(False,True)
-    cv2.imshow("Intersections and Paths", result_image)
+    #cv2.imshow("Intersections and Paths", result_image)
     cv2.imwrite("intersections_and_paths.png", result_image)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()
+
