@@ -40,10 +40,8 @@ def find_grid_intersections(image_path, min_pixels=5, border_margin=10, max_dens
     kernel = np.ones((3, 3), np.uint8)
     binary = cv2.dilate(binary, kernel, iterations=1)
     binary = cv2.erode(binary, kernel, iterations=1)
-
     output_image = cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
     height, width = binary.shape
-
     raw_intersections = []
 
     for y in range(border_margin, height - border_margin):
@@ -175,6 +173,7 @@ def find_path(oldPathfinder = False, Debugger = False):
                 print(f"Node ({i},{j}) is connected to: {matrix2[i][j]}")
 
     path = pf2.find_path(matrix2, [0, 4], [4, 4], True)
+
     if Debugger:
         if path != None:
             for i in range(len(path) - 1):

@@ -5,15 +5,7 @@ max_y = 0
 
 def get_directions(path):
     directions = []
-    
-    # Define the direction vectors
-    dir_vectors = {
-        (0, 1): 'right',
-        (1, 0): 'down',
-        (0, -1): 'left',
-        (-1, 0): 'up'
-    }
-    
+
     # Function to determine the direction between two points
     def direction(p1, p2):
         dx = p2[0] - p1[0]
@@ -22,23 +14,21 @@ def get_directions(path):
     
     # Initial direction
     current_dir = direction(path[0], path[1])
-    
     for i in range(1, len(path) - 1):
         next_dir = direction(path[i], path[i + 1])
-        
         if current_dir == next_dir:
             directions.append("f")
         else:
             if current_dir[0] != 0:  # Moving horizontally
                 if current_dir[0] == next_dir[1]:
-                    directions.append("l")
-                else:
                     directions.append("r")
+                else:
+                    directions.append("l")
             elif current_dir[1] != 0:  # Moving vertically
                 if current_dir[1] == next_dir[0]:
-                    directions.append("r")
-                else:
                     directions.append("l")
+                else:
+                    directions.append("r")
         
         current_dir = next_dir
     
